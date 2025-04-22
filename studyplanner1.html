@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Study Planner</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f4f6f8;
+      padding: 20px;
+      margin: 0;
+    }
+    .container {
+      max-width: 700px;
+      margin: auto;
+      background-color: #ffffff;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+    h2 {
+      font-size: 28px;
+      margin-bottom: 20px;
+      color: #4caf50;
+    }
+    .task-form {
+      margin-bottom: 20px;
+    }
+    .task-input {
+      width: 60%;
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #ddd;
+      margin-right: 10px;
+    }
+    .task-priority,
+    .task-date,
+    .task-category {
+      padding: 5px;
+      border-radius: 5px;
+      margin: 10px;
+      background-color: #f0f0f0;
+    }
+    .button {
+      padding: 10px 20px;
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .button:hover {
+      background-color: #45a049;
+    }
+    .task-list {
+      margin-top: 20px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .task {
+      display: flex;
+      align-items: center;
+      margin: 15px 0;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      background-color: #f9f9f9;
+    }
+    .task input[type="checkbox"] {
+      margin-right: 10px;
+    }
+    .task label {
+      flex-grow: 1;
+      font-size: 16px;
+    }
+    .task .priority {
+      font-weight: bold;
+    }
+    .task button {
+      background-color: #ff4d4d;
+      border: none;
+      padding: 5px 10px;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .task button:hover {
+      background-color: #e04d4d;
+    }
+    .clear-completed-btn {
+      background-color: #ff9800;
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    .clear-completed-btn:hover {
+      background-color: #f57c00;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>📚 Study Planner</h2>
+    
+    <div class="task-form">
+      <input type="text" id="taskInput" class="task-input" placeholder="Enter your task..." />
+      <select id="priority" class="task-priority">
+        <option value="Low">Low Priority</option>
+        <option value="Medium">Medium Priority</option>
+        <option value="High">High Priority</option>
+      </select>
+      <input type="date" id="dueDate" class="task-date" />
+      <select id="category" class="task-category">
+        <option value="Reading">Reading</option>
+        <option value="Practice">Practice</option>
+        <option value="Revision">Revision</option>
+      </select>
+      <button class="button" onclick="addTask()">Add Task</button>
+    </div>
+
+    <div class="task-list" id="taskList"></div>
+    
+    <button class="clear-completed-btn" onclick="clearCompleted()">Clear Completed Tasks</button>
+  </div>
+
+  <script>
+    let tasks = JSON.parse(localStorage.getItem('studyTasks')) || [];
+
+    function renderTasks() {
+      const taskList = document.getElementById('taskList');
+      taskList.innerHTML = '';
+      tasks.forEach((task, index) => {
+        const taskDiv = document.createElement('div');
+        taskDiv.className = 'task';
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = task.completed;
+        checkbox.onchange = () => toggleComplete(index);
+
+        const label = document.createElement('label');
+        label.textContent = `${task.text} [${task.type}] - ${task.dueDate} [Priority: ${task.priority}]`;
+
+        const priority = document.createElement('span');
+        priority.className = 'priority';
+        priority.textContent = `(${task.priority})`;
+
+        const removeBtn = document.createElement('button');
+        removeBtn.textContent = '🗑';
+        removeBtn.onclick = () => removeTask(index);
+
+        taskDiv.appendChild(checkbox);
+        taskDiv.appendChild(label);
+        taskDiv.appendChild(priority);
+        taskDiv.appendChild(removeBtn);
+        taskList.appendChild(taskDiv);
+      });
+    }
+
+    function addTask() {
+      const input = document.getElementById('taskInput');
+      const text = input.value.trim();
+      if (text === '') return;
+
+      const priority = document.getElementById('priority').value;
+      const dueDate = document.getElementById('dueDate').value;
+      const category = document.getElementById('category').value;
+
+      tasks.push({ text, priority, dueDate, type: category, completed: false });
+      input.value = '';
+      document.getElementById('priority').value = 'Low';
+      document.getElementById('dueDate').value = '';
+      document.getElementById('category').value = 'Reading';
+      
+      saveAndRender();
+    }
+
+    function toggleComplete(index) {
+      tasks[index].completed = !tasks[index].completed;
+      saveAndRender();
+    }
+
+    function removeTask(index) {
+      tasks.splice(index, 1);
+      saveAndRender();
+    }
+
+    function clearCompleted() {
+      tasks = tasks.filter(task => !task.completed);
+      saveAndRender();
+    }
+
+    function saveAndRender() {
+      localStorage.setItem('studyTasks', JSON.stringify(tasks));
+      renderTasks();
+    }
+
+    renderTasks();
+  </script>
+</body>
+</html>
